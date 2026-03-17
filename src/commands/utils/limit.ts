@@ -7,7 +7,7 @@ import {
   SlashCommandBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { increaseLimit, ratelimit } from "../../utils/redis.js";
+import { increaseLimit, ratelimit } from "../../utils/redis.ts";
 
 export default {
   data: new SlashCommandBuilder()
@@ -19,9 +19,9 @@ export default {
     );
     const raiseButton = new ButtonBuilder()
       .setCustomId("limit")
-      .setLabel("Ask StarNumber for more limits")
+      .setLabel("Ask someone12345656657 for more limits")
       .setStyle(ButtonStyle.Primary)
-      // .setDisabled(remaining >= 5)
+      .setDisabled()
       .setEmoji("🐈");
     const contentComponent = new TextDisplayBuilder().setContent(
       `You have ${remaining} remaining messages. Resets <t:${Math.floor(
@@ -64,7 +64,7 @@ export default {
       );
       await confirmation.reply({
         content:
-          "I asked StarNumber for a reset on your behalf. Please wait for a few minutes (or until he's online).",
+          "I asked someone12345656657 for a reset on your behalf. Please wait for a few minutes (or until he's online).",
         flags: MessageFlags.Ephemeral,
       });
     }
