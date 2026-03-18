@@ -16,6 +16,14 @@ import { askLimit } from "./utils/redis.ts";
 
 console.log("Starting up Lilly");
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,7 +58,6 @@ for (const folder of commandFolders) {
   for (const file of commandFiles) {
     const filePath = new URL("file://" + path.join(commandsPath, file));
     const command = (await import(filePath.toString())).default as CommandType;
-    // Set a new item in the Collection with the key as the command name and the value as the exported module
 
     if ("data" in command && "execute" in command) {
       client.commands.set(command.data.name, command);
@@ -66,37 +73,45 @@ for (const file of eventFiles) {
   const filePath = new URL("file://" + path.join(eventsPath, file));
   const event = (await import(filePath.toString())).default as EventType;
   client.on(event.eventType, (...args: unknown[]) => {
-    console.log(args);
     event.execute(client, ...args);
   });
   client.events.set(event.eventType, event);
 }
 
 async function playMeowOnGuilds() {
-  const guilds = client.guilds.cache.filter(
-    (guild) => guild.members.cache.filter((member) => member.user.bot).size > 0
-  );
-  guilds.forEach(async (guild) => {
-    getVoiceChannels(guild).forEach(async (channel) => {
-      console.log("Got channel " + channel.name);
-      if (hasMembers(channel)) {
-        console.log("Has members");
-        const randomValue = Math.random();
-        console.log(randomValue);
-        if (channel.name === "121.5") {
-          console.log("Meowing on guard!");
-        }
-        if (randomValue < 0.25 || channel.name === "121.5") {
-          await playAudio(channel, "assets/meow.mp3");
-          console.log("Meowed successfully!");
+  try {
+    const guilds = client.guilds.cache;
+    for (const [, guild] of guilds) {
+      const channels = getVoiceChannels(guild);
+      for (const channel of channels) {
+        console.log("Got channel " + channel.name);
+        if (hasMembers(channel)) {
+          console.log("Has members");
+          const randomValue = Math.random();
+          console.log(randomValue);
+          if (channel.name === "121.5") {
+            console.log("Meowing on guard!");
+          }
+          if (randomValue < 0.25 || channel.name === "121.5") {
+            try {
+              await playAudio(channel, "assets/meow.mp3");
+              console.log("Meowed successfully!");
+            } catch (err) {
+              console.error(`Failed to meow in channel ${channel.name}:`, err);
+            }
+          }
         }
       }
-    });
-  });
+    }
+  } catch (err) {
+    console.error("playMeowOnGuilds error:", err);
+  }
 }
 
 client.once(Events.ClientReady, () => {
   console.log("Ready!");
+  console.log("Guilds:", client.guilds.cache.size);
+  client.guilds.cache.forEach(g => console.log("Guild:", g.name, "Members cached:", g.members.cache.size));
   setTimeout(playMeowOnGuilds, 1000 * 60 * 5);
   playMeowOnGuilds();
 });

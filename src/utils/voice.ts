@@ -5,6 +5,7 @@ import {
   createAudioResource,
   AudioPlayerStatus,
   StreamType,
+  VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { join } from "path";
 import type { ClientType } from "../types.ts";
@@ -41,19 +42,53 @@ export function joinChannel(channel: VoiceChannel) {
  */
 export async function playAudio(channel: VoiceChannel, filename: string) {
   const connection = joinChannel(channel);
-  const player = createAudioPlayer();
-  const resource = createAudioResource(join(process.cwd(), filename));
 
-  connection.subscribe(player);
-  console.log("Subscribed to player");
-  player.play(resource);
-  console.log("Playing audio");
-
-  return new Promise((resolve) => {
-    player.on(AudioPlayerStatus.Idle, () => {
-      console.log("Idle");
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
       connection.destroy();
-      resolve(true);
+      reject(new Error(`playAudio timed out in channel ${channel.name}`));
+    }, 30_000);
+
+    connection.once(VoiceConnectionStatus.Ready, () => {
+      try {
+        const player = createAudioPlayer();
+        const resource = createAudioResource(join(process.cwd(), filename));
+
+        connection.subscribe(player);
+        console.log("Subscribed to player");
+        player.play(resource);
+        console.log("Playing audio");
+
+        player.on(AudioPlayerStatus.Idle, () => {
+          console.log("Idle");
+          clearTimeout(timeout);
+          connection.destroy();
+          resolve(true);
+        });
+
+        player.on("error", (error) => {
+          console.error(`Audio player error in ${channel.name}:`, error);
+          clearTimeout(timeout);
+          connection.destroy();
+          reject(error);
+        });
+      } catch (err) {
+        clearTimeout(timeout);
+        connection.destroy();
+        reject(err);
+      }
+    });
+
+    connection.on(VoiceConnectionStatus.Disconnected, () => {
+      clearTimeout(timeout);
+      resolve(false);
+    });
+
+    connection.on("error", (err) => {
+      console.error(`Voice connection error in ${channel.name}:`, err);
+      clearTimeout(timeout);
+      try { connection.destroy(); } catch {}
+      reject(err);
     });
   });
 }
@@ -80,7 +115,6 @@ export async function playAudioPlaylist(
     console.log(`Playing ${filename}`);
     console.log(filePath);
 
-    // Create a fresh audio resource each time
     const resource = createAudioResource(filePath, {
       inputType: StreamType.Arbitrary,
       metadata: {
@@ -95,30 +129,24 @@ export async function playAudioPlaylist(
     player.play(resource);
   }
 
-  // Set up event listeners
   player.on(AudioPlayerStatus.Playing, () => {
     console.log("Audio started playing");
   });
 
   player.on(AudioPlayerStatus.Idle, () => {
     console.log("Audio finished, moving to next");
-
-    // Small delay before playing next song
     setTimeout(() => {
       playRandomSong();
     }, 500);
   });
 
-  // Handle errors
   player.on("error", (error) => {
     console.error("Audio player error:", error);
-
     setTimeout(() => {
       playRandomSong();
     }, 500);
   });
 
-  // Start playing the first song
   if (startingSong) {
     const filename = startingSong;
     const filePath = join(process.cwd(), playlistPath, filename ?? "");
@@ -140,5 +168,5 @@ export async function playAudioPlaylist(
     playRandomSong();
   }
 
-  return player; // Return player so you can control it externally if needed
+  return player;
 }
