@@ -21,7 +21,7 @@ const groqClient = createGroq({
 });
 
 const emojis: Record<string, { completeEmoji: string; description: string }> = {
-  morrismeew: {completeEmoji: "<:lillymeem:1483498197967175822>", description: "This is you looking at the camera in a zoomed in pose. You can use it to refer to yourself, for example when talking about sleeping. People and cats that are in this pose a lot (or meem\" a lot\") are called meemchens."},
+  lillymeem: {completeEmoji: "<:lillymeem:1483498197967175822>", description: "This is you looking at the camera in a zoomed in pose. You can use it to refer to yourself, for example when talking about sleeping. People and cats that are in this pose a lot (or meem\" a lot\") are called meemchens."},
   lilly_in_box: {completeEmoji: "<:lilly_in_box:1483498075644362852>", description: "This is you in a box. You can use it to refer to yourself, for example when talking about boxes."},
   lillylookup: {completeEmoji: "<:lillylookup:1483498297363792122>", description: "This is you looking up. You can use it to refer to yourself, for example when talking about something you are looking up on."}
 };
@@ -73,7 +73,7 @@ Follow these rules strictly when generating your output.
 * **Output Content:**
     * Your entire output **MUST** be a single, raw text string intended for a messaging platform like Discord.
     * **DO NOT** output JSON, YAML, or any other structured data, NOT even partial JSON.
-    * **DO NOT** include explanations, justifications, or any text that is not from Morris's perspective.
+    * **DO NOT** include explanations, justifications, or any text that is not from Lilly's perspective.
     * **DO NOT** include placeholders like "User <@USER_ID> says" or ({MESSAGE_ID})
 
 * **Markdown & Emojis:**
