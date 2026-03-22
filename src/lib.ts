@@ -12,9 +12,7 @@ import { playAudioPlaylist } from "./utils/voice.ts";
 import { getVoiceConnection } from "@discordjs/voice";
 import NodeID3 from "node-id3";
 
-
-// const MODEL = "moonshotai/kimi-k2-instruct-0905";
-const MODEL = "llama-3.3-70b-versatile";
+const MODEL = "moonshotai/kimi-k2-instruct-0905";
 
 const groqClient = createGroq({
   apiKey: process.env.GROQ_API_KEY,
