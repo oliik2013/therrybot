@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 import { getVoiceChannels, hasMembers, playAudio } from "./utils/voice.ts";
 import { askLimit } from "./utils/redis.ts";
 
-console.log("Starting up Lilly");
+console.log("Starting up Therry");
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
