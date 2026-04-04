@@ -70,7 +70,7 @@ export default {
     const output = await genMistyOutput(messages, client, message);
     console.log(output);
     if (output?.includes("{{MYSELF}}")) {
-      const imageResponse = await fetch("https://lillyapi-cat-api.sigmatwojastara.workers.dev/raw");
+      const imageResponse = await fetch("https://therryapi-cat-api.sigmatwojastara.workers.dev/raw");
       const imageData = Buffer.from(await imageResponse.arrayBuffer());
       await message.reply({ files: [imageData] });
       return;
