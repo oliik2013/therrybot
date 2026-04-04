@@ -19,7 +19,7 @@ const groqClient = createGroq({
 });
 
 const emojis: Record<string, { completeEmoji: string; description: string }> = {
-  therrymeew: {completeEmoji: "<:therrymeem:1490027358151901366>", description: "This is you looking at the camera in a zoomed in pose. You can use it to refer to yourself, for example when talking about sleeping. People and cats that are in this pose a lot (or \"meew a lot\") are called meewchens."}
+  therrymeew: {completeEmoji: "<:therrymeew:1490027358151901366>", description: "This is you looking at the camera in a zoomed in pose. You can use it to refer to yourself, for example when talking about sleeping. People and cats that are in this pose a lot (or \"meew a lot\") are called meewchens."}
 };
 
 function makeCompleteEmoji(text: string) {
