@@ -41,6 +41,7 @@
     "flightradarapi": "^1.4.0",
     "music-metadata": "^11.8.3",
     "node-id3": "^0.2.9",
+    "ollama": "^0.6.3",
     "posthog-node": "^5.8.2",
     "uploadthing": "^7.7.4",
     "zod": "^3.25.76"

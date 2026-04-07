@@ -11,12 +11,9 @@ import { readdir } from "fs/promises";
 import { playAudioPlaylist } from "./utils/voice.ts";
 import { getVoiceConnection } from "@discordjs/voice";
 import NodeID3 from "node-id3";
+import ollama from 'ollama';
 
-const MODEL = "moonshotai/kimi-k2-instruct-0905";
-
-const groqClient = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const MODEL = "qwen3:1.7b";
 
 const emojis: Record<string, { completeEmoji: string; description: string }> = {
   therrymeew: {completeEmoji: "<:therrymeew:1490027358151901366>", description: "This is you looking at the camera in a zoomed in pose. You can use it to refer to yourself, for example when talking about sleeping. People and cats that are in this pose a lot (or \"meew a lot\") are called meewchens."}
@@ -175,27 +172,79 @@ export async function genMistyOutput(
 
 
   try {
-    const response = await generateText({
-      model: groqClient(MODEL),
-      system: systemPrompt,
+    const response = await ollama.chat({
+      model: MODEL,
       messages: messages
+        .slice()
         .reverse()
-        .map((message) => getMessageContentOrParts(message)),
-      tools: {
-        myself: myselfTool,
-        sendMessage: sendMessageTool,
-      },
+        .map((message) => {
+          const formattedMessage = getMessageContentOrParts(message);
+
+          return {
+            role: formattedMessage.role,
+            content:
+              typeof formattedMessage.content === "string"
+                ? formattedMessage.content
+                : formattedMessage.content
+                    .filter((part) => part.type === "text")
+                    .map((part) => part.text)
+                    .join("\n"),
+          };
+        }),
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "myself",
+            description: myselfTool.description,
+            parameters: {
+              type: "object",
+              properties: {},
+              required: [],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "sendMessage",
+            description: sendMessageTool.description,
+            parameters: {
+              type: "object",
+              properties: {
+                message: {
+                  type: "string",
+                },
+              },
+              required: ["message"],
+            },
+          },
+        },
+      ],
     });
 
-    const text = response.text;
-    const toolResponse = response.toolResults[0]?.output;
-    if (!toolResponse) {
-      return makeCompleteEmoji(text).replace(
+    const toolCall = response.message.tool_calls?.[0];
+    if (!toolCall) {
+      return makeCompleteEmoji(response.message.content).replace(
         /\b(?:i(?:['’])?m|i am)\s+a\s+d(o|0)g\w*\b([.!?])?/gi,
         "I'm not a dog$1"
       );
     }
-    const { message } = toolResponse as {
+
+    const toolResponse =
+      toolCall.function.name === "myself"
+        ? await myselfTool.execute?.({}, {
+            toolCallId: "ollama-myself",
+            messages: [],
+          })
+        : await sendMessageTool.execute?.({
+            message: String(toolCall.function.arguments.message ?? ""),
+          }, {
+            toolCallId: "ollama-sendMessage",
+            messages: [],
+          });
+
+    const { message } = (toolResponse ?? { message: response.message.content }) as {
       message: string;
     };
 
