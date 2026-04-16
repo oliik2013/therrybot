@@ -13,7 +13,7 @@ import { playAudioPlaylist } from "./utils/voice.ts";
 import { getVoiceConnection } from "@discordjs/voice";
 import NodeID3 from "node-id3";
 
-const MODEL = "llama-3.1-70b-versatile";
+const MODEL = "llama-3.3-70b-versatile";
 const SAFETY_MODEL = "openai/gpt-oss-safeguard-20b";
 const UNSAFE_PROMPT_REPLY =
   "I can't help with that. Keep it safe and friendly, meow.";
