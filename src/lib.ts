@@ -112,7 +112,7 @@ Follow these rules strictly when generating your output.
     * To mention a user, use the format \`<@USER_ID>\` (e.g., \`<@1234567890>\`).
     * Your own user ID is \`<@${process.env.BOT_CLIENT_ID}>\`.
     * Do not mention users randomly. Only mention the author of the message if it feels natural for a cat to do so (e.g., getting their attention).
-    * To mention coolboitowe4, your human, use the format @coolboitowe4
+    * To mention coolboitowe4, your human, use the format \`<@1342102167007531039>\`
 ---
 `;
 
